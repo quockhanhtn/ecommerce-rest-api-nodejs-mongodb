@@ -1,15 +1,7 @@
-const { json } = require('body-parser');
 const mongoose = require('mongoose');
 
+const resUtils = require('../utils/res.utils');
 const Country = require('../model/country.model');
-
-function catchError(res, err, message) {
-  console.log(err);
-  res.status(500).json({
-    success: false,
-    error: err.message
-  });
-}
 
 
 exports.create = (req, res, next) => {
@@ -33,38 +25,20 @@ exports.create = (req, res, next) => {
   country.save()
     .then(docs => {
       if (docs) {
-        res.status(201).json({
-          success: true,
-          message: 'Create country successfully!',
-          data: docs
-        });
-      }
-      else { throw Error('Error when insert country'); }
+        resUtils.createdResponse(res, 'Create country successfully!', docs);
+      } else { throw Error('Error when insert country'); }
     })
-    .catch(err => catchError(res, err));
+    .catch(err => resUtils.errorResponse(res, err));
 }
+
 
 exports.read = (req, res, next) => {
   Country.find()
-    .then(docs => {
-      res.status(200).json({
-        success: true,
-        data: docs
-      });
-    })
-    .catch(err => catchError(res, err));
+    .select('_id name nativeName alpha2Code alpha3Code callingCodes region subregion imageBase64')
+    .then(docs => resUtils.okResponse(res, null, docs))
+    .catch(err => resUtils.errorResponse(res, err));
 }
 
-exports.update = (req, res, next) => {
-  res.status(405).json({
-    status: false,
-    message: 'Method not allow!'
-  });
-}
 
-exports.delete = (req, res, next) => {
-  res.status(405).json({
-    status: false,
-    message: 'Method not allow!'
-  });
-}
+exports.update = (req, res, next) => resUtils.methodNotAllowResponse(res, 'Method not allow!');
+exports.delete = (req, res, next) => resUtils.methodNotAllowResponse(res, 'Method not allow!');
