@@ -9,6 +9,7 @@ const mongoose = require('mongoose');
 const indexRoutes = require('./api/routes/index');
 const userRoutes = require('./api/routes/user');
 const countryRoutes = require('./api/routes/countries');
+const categoryRoutes = require('./api/routes/categories');
 const productRoutes = require('./api/routes/products');
 const orderRoutes = require('./api/routes/orders');
 
@@ -34,9 +35,8 @@ mongoose.set('useCreateIndex', true);
 
 
 // share uploads resource
-app.use('/uploads', express.static('uploads'));
-app.use(express.static(path.join(__dirname, "public")));
-
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/public/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 
 //#region User middleware
 app.use(morgan('dev'));
@@ -80,6 +80,7 @@ app.use((req, res, next) => {
 app.use('/', indexRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/countries', countryRoutes);
+app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 //#endregion

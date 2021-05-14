@@ -2,25 +2,16 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
+const resUtils = require('../utils/res.utils');
 const User = require('../model/user.model');
 
-function catchError(res, err, message) {
-  console.log(err);
-  res.status(500).json({
-    success: false,
-    error: err.message
-  });
-}
 
-function signup(req, res, next) {
+exports.signup = (req, res, next) => {
   User.find({ email: req.body.email })
     .exec()
     .then(userDocs => {
       if (userDocs.length >= 1) {
-        res.status(404).json({
-          success: false,
-          error: 'Mail exists'
-        });
+        resUtils.notFoundResponse(res, 'Mail exists')
       } else {
         bcrypt.hash(req.body.password, 10, (err, hash) => {
           if (err) {
@@ -43,49 +34,36 @@ function signup(req, res, next) {
           }
         });
       }
-    }).catch(err => catchError(res, err));
+    })
+    .catch(err => resUtils.errorResponse(res, err));
 }
 
-function login(req, res, next) {
-  User.find({ email: req.body.email })
+exports.login = (req, res, next) => {
+  User.findOne({ email: req.body.email })
     .exec()
-    .then(userDocs => {
-      if (userDocs.length < 1) {
-        return res.status(404).json({
-          success: false,
-          error: 'Mail not found, user doesn\'t exist'
-        });
+    .then(userFound => {
+      if (userFound.length < 1) {
+        resUtils.notFoundResponse(res, 'User doesn\'t exist');
       } else {
-        bcrypt.compare(req.body.password, userDocs[0].password, (err, result) => {
-          if (err) {
-            catchError(res, err);
-          }
+        bcrypt.compare(req.body.password, userFound.password, (err, result) => {
+          if (err) { throw new Error(err.message); }
           if (result) {
             const token = jwt.sign(
               {
-                email: userDocs[0].email,
-                userId: userDocs[0]._id
+                email: userFound.email,
+                userId: userFound._id,
+                userType: userFound.userType
               },
               process.env.JWT_KEY,
               {
                 expiresIn: "1h"
               });
-            return res.status(200).json({
-              success: true,
-              message: 'Auth successful!',
-              token: token
-            });
+            resUtils.okResponse(res, 'Auth successful!', { token: token });
+          } else {
+            resUtils.unauthorizedResponse(res, 'Auth failed!');
           }
-          res.status(401).json({
-            success: false,
-            message: 'Auth failed!'
-          });
         });
       }
-    }).catch(err => catchError(res, err));
-}
-
-module.exports = {
-  signup,
-  login
+    })
+    .catch(err => resUtils.errorResponse(res, err));
 }

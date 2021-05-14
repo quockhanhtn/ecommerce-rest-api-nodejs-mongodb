@@ -9,9 +9,9 @@ const categorySchema = mongoose.Schema({
     type: mongoose.Types.ObjectId,
     ref: 'Category',
     required: false,
-    default: ''
+    default: null
   },
-  primary: { type: Boolean, required: true, default: false },
+  isPrimary: { type: Boolean, required: true, default: false },
   image: { type: String, required: false },
 
   createdAt: { type: Date, default: Date.now },
