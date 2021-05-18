@@ -5,6 +5,19 @@ const NO_FILE_PER_REQUEST = 1;
 const multer = require('multer');
 
 /**
+ * Remove accents in String
+ * 
+ * Ref: https://www.tunglt.com/2018/11/bo-dau-tieng-viet-javascript-es6/
+ * @param {String} str 
+ * @returns String without accents
+ */
+function removeAccents(str) {
+  return str.normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, 'd').replace(/Đ/g, 'D');
+}
+
+/**
  * Get Multer instance
  * 
  * @param {String[]} allowedMimes 
@@ -17,7 +30,7 @@ function multerUpload(allowedMimes = []) {
       cb(null, UPLOAD_PATH);
     },
     filename: function (req, file, cb) {
-      cb(null, Date.now() + "_" + file.originalname);
+      cb(null, Date.now() + "_" + removeAccents(file.originalname));
     }
   });
 
