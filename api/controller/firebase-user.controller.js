@@ -1,11 +1,13 @@
-const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-
+const admin = require("firebase-admin");
 const resUtils = require('../utils/res.utils');
 
-const admin = require("firebase-admin");
-
+/**
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
 exports.read = (req, res, next) => {
   admin.auth().listUsers(1000)
     .then(docs => {
@@ -14,6 +16,13 @@ exports.read = (req, res, next) => {
     .catch(err => resUtils.errorResponse(res, err));
 }
 
+
+/**
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
 exports.signup = (req, res, next) => {
   bcrypt.hash(req.body.password, 10, (err, hash) => {
     if (err) {
@@ -37,6 +46,13 @@ exports.signup = (req, res, next) => {
   });
 }
 
+
+/**
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
 exports.login = (req, res, next) => {
 
 }
