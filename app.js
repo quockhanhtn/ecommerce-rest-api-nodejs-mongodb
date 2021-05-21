@@ -6,7 +6,11 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const admin = require("firebase-admin");
-const serviceAccount = require('./private/serviceAccountKey.json');
+const serviceAccount = {
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  privateKey: process.env.FIREBASE_PRIVATE_KEY,
+  clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+}
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://fir-project-1-58a04.firebaseio.com"
