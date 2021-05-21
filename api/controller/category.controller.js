@@ -62,7 +62,6 @@ exports.readSubs = (req, res, next) => {
 
   Category.find({ parent: id })
     .select(SELECT_FIELD)
-    .populate('parent')
     .then(docs => {
       docs = mapCategoryImage(docs, req);
       return resUtils.okResponse(res, null, docs);
