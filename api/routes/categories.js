@@ -15,4 +15,7 @@ router.route('/')
     categoryController.create
   );
 
+router.route('/:id/subs')
+  .get(categoryController.readSubs);
+
 module.exports = router;
