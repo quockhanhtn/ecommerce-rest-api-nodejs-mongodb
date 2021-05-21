@@ -5,8 +5,16 @@ const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
+const admin = require("firebase-admin");
+const serviceAccount = require('./private/serviceAccountKey.json');
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://fir-project-1-58a04.firebaseio.com"
+});
+
 
 const indexRoutes = require('./api/routes/index');
+const fireBaseUserRoutes = require('./api/routes/firebase-user');
 const userRoutes = require('./api/routes/user');
 const countryRoutes = require('./api/routes/countries');
 const categoryRoutes = require('./api/routes/categories');
@@ -78,6 +86,7 @@ app.use((req, res, next) => {
 
 //#region Routes which should handle requests
 app.use('/', indexRoutes);
+app.use('/api/firebase-user', fireBaseUserRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/countries', countryRoutes);
 app.use('/api/categories', categoryRoutes);

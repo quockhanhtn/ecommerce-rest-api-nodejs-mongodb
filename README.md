@@ -17,6 +17,7 @@ npm install multer --save
 npm install bcrypt --save
 npm install jsonwebtoken --save
 npm install nodemailer --save
+npm install firebase-admin --save
 
 npm install nodemon --save-dev
 ```
