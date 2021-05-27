@@ -21,7 +21,7 @@ function mapCategoryImage(categoriesList, req) {
 }
 
 
-exports.create = (req, res, next) => {
+exports.create = async (req, res, next) => {
   const category = new Category({
     name: req.body.name,
     isPrimary: req.body.isPrimary,
@@ -36,45 +36,40 @@ exports.create = (req, res, next) => {
     }
   }
 
-  category.save()
-    .then(docs => {
-      if (docs) {
-        resUtils.createdResponse(res, 'Create category successfully!', docs);
-      } else { throw Error('Error when insert category'); }
-    })
-    .catch(err => resUtils.errorResponse(res, err));
+  try {
+    const newCategory = await category.save();
+    resUtils.createdResponse(res, 'Create category successfully!', newCategory);
+  } catch (err) {
+    resUtils.errorResponse(res, err)
+  }
 }
 
 
 exports.read = async (req, res, next) => {
-  Category.find()
-    .select(SELECT_FIELD)
-    .exec()
-    .then(docs => {
-      docs = mapCategoryImage(docs, req);
+  try {
+    let categories = await Category.find().select(SELECT_FIELD).exec();
+    let mainCategories = categories.filter(x => !x.parent);
 
-      let mainCategories = docs.filter(x => !x.parent);
-
-      for (let mainCat of mainCategories) {
-        mainCat.children = docs.filter(x => x.parent == mainCat._id);
-      }
-
-      return resUtils.okResponse(res, null, mainCategories);
-    })
-    .catch(err => resUtils.errorResponse(res, err));
+    for (let mainCat of mainCategories) {
+      mainCat.children = categories.filter(x => x.parent == mainCat._id);
+      console.log(mainCat);
+    }
+    resUtils.okResponse(res, null, mainCategories)
+  } catch (err) {
+    resUtils.errorResponse(res, err)
+  }
 }
 
 
-exports.readSubs = (req, res, next) => {
-  const id = req.params.id;
-
-  Category.find({ parent: id })
-    .select(SELECT_FIELD)
-    .then(docs => {
-      docs = mapCategoryImage(docs, req);
-      return resUtils.okResponse(res, null, docs);
-    })
-    .catch(err => resUtils.errorResponse(res, err));
+exports.readSubs = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    let categories = await Category.find({ parent: id }).select(SELECT_FIELD).exec()
+    categories = mapCategoryImage(categories, req)
+    resUtils.okResponse(res, null, categories);
+  } catch (err) {
+    resUtils.errorResponse(res, err)
+  }
 }
 
 

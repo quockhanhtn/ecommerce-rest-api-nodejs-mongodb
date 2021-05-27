@@ -4,7 +4,7 @@ const resUtils = require('../utils/res.utils');
 const Country = require('../model/country.model');
 
 
-exports.create = (req, res, next) => {
+exports.create = async (req, res, next) => {
   const country = new Country({
     _id: new mongoose.Types.ObjectId(),
     name: req.body.name,
@@ -22,21 +22,23 @@ exports.create = (req, res, next) => {
     country.callingCodes = req.body.callingCodes.join(', ');
   }
 
-  country.save()
-    .then(docs => {
-      if (docs) {
-        resUtils.createdResponse(res, 'Create country successfully!', docs);
-      } else { throw Error('Error when insert country'); }
-    })
-    .catch(err => resUtils.errorResponse(res, err));
+  try {
+    let newCountry = await country.save();
+    resUtils.createdResponse(res, 'Create country successfully!', newCountry);
+  } catch (err) {
+    resUtils.errorResponse(res, err)
+  }
 }
 
 
 exports.read = (req, res, next) => {
-  Country.find()
-    .select('_id name nativeName alpha2Code alpha3Code callingCodes region subregion imageBase64')
-    .then(docs => resUtils.okResponse(res, null, docs))
-    .catch(err => resUtils.errorResponse(res, err));
+  try {
+    const selectField = '_id name nativeName alpha2Code alpha3Code callingCodes region subregion imageBase64';
+    const countries = Country.find(selectField).select().exec();
+    resUtils.okResponse(res, null, countries);
+  } catch (err) {
+    resUtils.errorResponse(res, err)
+  }
 }
 
 
