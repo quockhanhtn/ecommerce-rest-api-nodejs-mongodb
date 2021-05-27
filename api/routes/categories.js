@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const allowedMimes = ['image/jpeg', 'image/jpeg', 'image/png', 'image/gif'];
-const upload = require('../utils/upload.utils').multerUpload(allowedMimes);
+const upload = require('../utils/upload.utils').multerUpload('/categories/', allowedMimes);
 const auth = require('../middlewares/auth');
 
 const categoryController = require('../controller/category.controller');

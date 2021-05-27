@@ -46,16 +46,24 @@ exports.create = (req, res, next) => {
 }
 
 
-exports.read = (req, res, next) => {
+exports.read = async (req, res, next) => {
   Category.find()
     .select(SELECT_FIELD)
-    .populate('parent')
+    .exec()
     .then(docs => {
       docs = mapCategoryImage(docs, req);
-      return resUtils.okResponse(res, null, docs);
+
+      let mainCategories = docs.filter(x => !x.parent);
+
+      for (let mainCat of mainCategories) {
+        mainCat.children = docs.filter(x => x.parent == mainCat._id);
+      }
+
+      return resUtils.okResponse(res, null, mainCategories);
     })
     .catch(err => resUtils.errorResponse(res, err));
 }
+
 
 exports.readSubs = (req, res, next) => {
   const id = req.params.id;
@@ -68,7 +76,6 @@ exports.readSubs = (req, res, next) => {
     })
     .catch(err => resUtils.errorResponse(res, err));
 }
-
 
 
 exports.update = (req, res, next) => resUtils.methodNotAllowResponse(res, 'Method not allow!');

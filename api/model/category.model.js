@@ -8,19 +8,10 @@ mongoose.plugin(mongooseSlug);
 const categorySchema = mongoose.Schema({
   _id: Number,
   name: { type: String, required: true },
-  slug: {
-    type: String,
-    slug: "name",
-    slug_padding_size: 2,
-    unique: true
-  },
+  slug: { type: String, slug: "name", slug_padding_size: 2, unique: true },
   description: { type: String, required: false },
-  parent: {
-    type: Number,
-    ref: 'Category',
-    required: false,
-    default: null
-  },
+
+  parent: { type: Number, ref: 'Category', required: false, default: null },
   isPrimary: { type: Boolean, required: true, default: false },
   image: { type: String, required: false },
 

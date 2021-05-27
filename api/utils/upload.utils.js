@@ -1,4 +1,4 @@
-const UPLOAD_PATH = './public/uploads/';
+const ROOT_UPLOAD_PATH = './public/uploads';
 const MAX_UPLOAD_FILE_SIZE = 1024 * 1024;
 const NO_FILE_PER_REQUEST = 1;
 
@@ -24,10 +24,10 @@ function removeAccents(str) {
  * @returns  Multer instance that provides several methods for generating
   * middleware that process files uploaded in `multipart/form-data` format.
  */
-function multerUpload(allowedMimes = []) {
+function multerUpload(customPath, allowedMimes = []) {
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-      cb(null, UPLOAD_PATH);
+      cb(null, ROOT_UPLOAD_PATH + customPath);
     },
     filename: function (req, file, cb) {
       cb(null, Date.now() + "_" + removeAccents(file.originalname));
