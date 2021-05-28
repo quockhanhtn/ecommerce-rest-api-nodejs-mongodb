@@ -22,6 +22,7 @@ const fireBaseUserRoutes = require('./api/routes/firebase-user');
 const userRoutes = require('./api/routes/user');
 const countryRoutes = require('./api/routes/countries');
 const categoryRoutes = require('./api/routes/categories');
+const brandRoutes = require('./api/routes/brands');
 const productRoutes = require('./api/routes/products');
 const orderRoutes = require('./api/routes/orders');
 
@@ -94,6 +95,7 @@ app.use('/api/firebase-user', fireBaseUserRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/countries', countryRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/brands', brandRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 //#endregion

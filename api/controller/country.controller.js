@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const resUtils = require('../utils/res.utils');
-const Country = require('../model/country.model');
+const Country = require('../models/country.model');
 
 
 exports.create = async (req, res, next) => {

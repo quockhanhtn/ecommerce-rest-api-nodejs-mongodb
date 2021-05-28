@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const resUtils = require('../utils/res.utils');
-const Category = require('../model/category.model');
+const Category = require('../models/category.model');
 
 const SELECT_FIELD = '_id name slug description image isPrimary createdAt updatedAt parent'
 
@@ -48,6 +48,7 @@ exports.create = async (req, res, next) => {
 exports.read = async (req, res, next) => {
   try {
     let categories = await Category.find().select(SELECT_FIELD).exec();
+    categories = mapCategoryImage(categories, req);
     let mainCategories = categories.filter(x => !x.parent);
 
     for (let mainCat of mainCategories) {

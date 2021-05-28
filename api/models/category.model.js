@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const mongoosePaginate = require('mongoose-paginate-v2');
 const mongooseSlug = require('mongoose-slug-generator');
-const mongooseSequence = require('mongoose-sequence')(mongoose);
+const AutoIncrement = require('mongoose-sequence')(mongoose);
 
 mongoose.plugin(mongooseSlug);
 
@@ -21,7 +21,7 @@ const categorySchema = mongoose.Schema({
 }, { _id: false });
 
 categorySchema.plugin(mongoosePaginate);
-categorySchema.plugin(mongooseSequence);
+categorySchema.plugin(AutoIncrement);
 
 
 module.exports = mongoose.model('Category', categorySchema);
