@@ -1,16 +1,32 @@
 const jwt = require('jsonwebtoken');
+const resUtils = require('../utils/res.utils');
 
-module.exports = (req, res, next) => {
+function getUserData(req) {
+  // Header 'Authorization: Bearer [JWT_TOKEN]'
+  const jwtToken = req.headers.authorization.split(' ')[1];
+  return jwt.verify(jwtToken, process.env.JWT_KEY);
+}
+
+exports.isAdmin = (req, res, next) => {
   try {
-    // Header 'Authorization: Bearer [JWT_TOKEN]'
-    const jwtToken = req.headers.authorization.split(' ')[1];
-    const decodedData = jwt.verify(jwtToken, process.env.JWT_KEY);
-    req.userData = decodedData;
-    next();
+    let data = getUserData(req);
+    if (data.userType === 'admin') {
+      req.userData = data;
+      next();
+    } else { throw Error('User have not permission for this resource'); }
   } catch (error) {
-    return res.status(401).json({
-      success: false,
-      message: 'Auth failed!'
-    });
+    resUtils.unauthorizedResponse(res, 'Auth failed! ' + error);
+  }
+}
+
+exports.isCustomer = (req, res, next) => {
+  try {
+    let data = getUserData(req);
+    if (data.userType === 'custommer') {
+      req.userData = data;
+      next();
+    } else { throw Error('User have not permission for this resource'); }
+  } catch (error) {
+    resUtils.unauthorizedResponse(res, 'Auth failed! ' + error);
   }
 }
