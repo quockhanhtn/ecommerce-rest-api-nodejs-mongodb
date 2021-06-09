@@ -1,3 +1,5 @@
+// ref https://github.com/ritikgupt/medium-blog-firebase
+
 const bcrypt = require('bcrypt');
 const admin = require("firebase-admin");
 const resUtils = require('../utils/res.utils');
@@ -23,7 +25,14 @@ exports.read = (req, res, next) => {
  * @param {*} res 
  * @param {*} next 
  */
-exports.signup = (req, res, next) => {
+exports.signup = async (req, res, next) => {
+
+  try {
+    const user = await admin.auth().getUserByPhoneNumber(req.body.phone)
+  } catch (e) {
+    res.json({ message: 'no user record found' })
+  }
+  
   bcrypt.hash(req.body.password, 10, (err, hash) => {
     if (err) {
       resUtils.errorResponse(res, err);

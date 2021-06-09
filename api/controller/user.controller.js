@@ -6,7 +6,7 @@ const resUtils = require('../utils/res.utils');
 const User = require('../models/user.model');
 
 
-exports.signup = (req, res, next) => {
+exports.signup = async (req, res, next) => {
   User.find({ email: req.body.email })
     .exec()
     .then(userDocs => {

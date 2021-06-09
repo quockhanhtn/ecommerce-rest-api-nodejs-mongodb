@@ -47,15 +47,16 @@ exports.create = async (req, res, next) => {
 
 exports.read = async (req, res, next) => {
   try {
-    let categories = await Category.find().select(SELECT_FIELD).exec();
+    let categories = await Category.find().select(SELECT_FIELD).lean().exec();
     categories = mapCategoryImage(categories, req);
     let mainCategories = categories.filter(x => !x.parent);
 
     for (let mainCat of mainCategories) {
       mainCat.children = categories.filter(x => x.parent == mainCat._id);
-      console.log(mainCat);
     }
     resUtils.okResponse(res, null, mainCategories)
+    console.log(mainCategories);
+
   } catch (err) {
     resUtils.errorResponse(res, err)
   }
