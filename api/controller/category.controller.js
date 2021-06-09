@@ -7,12 +7,12 @@ const SELECT_FIELD = '_id name slug description image isPrimary createdAt update
 function mapCategoryImage(categoriesList, req) {
   return categoriesList.map(category => {
     if (category.image) {
-      category.image = req.protocol + '://' + req.get('host') + '/' + category.image;
+      category.image = `${req.protocol}://${req.get('host')}/${category.image}`;
     }
     let cParent = category.parent;
     while (cParent) {
       if (cParent.image && !cParent.image.startsWith(req.protocol)) {
-        cParent.image = req.protocol + '://' + req.get('host') + '/' + cParent.image;
+        cParent.image = `${req.protocol}://${req.get('host')}/${cParent.image}`;
       }
       cParent = cParent.parent;
     }
@@ -52,11 +52,13 @@ exports.read = async (req, res, next) => {
     let mainCategories = categories.filter(x => !x.parent);
 
     for (let mainCat of mainCategories) {
-      mainCat.children = categories.filter(x => x.parent == mainCat._id);
+      mainCat.children = categories.filter(x => x.parent == mainCat._id)
+        .map(category => {
+          delete category.parent;
+          return category;
+        });
     }
-    resUtils.okResponse(res, null, mainCategories)
-    console.log(mainCategories);
-
+    resUtils.okResponse(res, null, mainCategories);
   } catch (err) {
     resUtils.errorResponse(res, err)
   }
