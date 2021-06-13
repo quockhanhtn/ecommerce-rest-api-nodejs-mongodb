@@ -100,7 +100,7 @@ exports.read = async (req, res, next) => {
     populate: [
       {
         path: 'category',
-        select: '_id name slug description image isPrimary createdAt updatedAt parent',
+        select: '_id name slug description image isPrimary createdAt updatedAt',
         model: 'Category'
       },
       {
