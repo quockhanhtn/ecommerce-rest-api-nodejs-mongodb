@@ -3,7 +3,7 @@ const router = express.Router();
 
 const allowedMimes = ['image/jpeg', 'image/jpeg', 'image/png', 'image/gif'];
 const upload = require('../utils/upload.utils').multerUpload('/categories/', allowedMimes);
-const auth = require('../middlewares/auth');
+const jwtAuth = require('../middlewares/jwt-auth');
 
 const categoryController = require('../controller/category.controller');
 
@@ -11,6 +11,7 @@ const categoryController = require('../controller/category.controller');
 router.route('/')
   .get(categoryController.read)
   .post(
+    jwtAuth.isAdmin,
     upload.single('categoryImage'),
     categoryController.create
   );

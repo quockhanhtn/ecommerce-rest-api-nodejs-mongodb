@@ -60,7 +60,7 @@ exports.read = async (req, res, next) => {
     }
     resUtils.okResponse(res, null, mainCategories);
   } catch (err) {
-    resUtils.errorResponse(res, err)
+    resUtils.errorResponse(res, err);
   }
 }
 
@@ -77,5 +77,5 @@ exports.readSubs = async (req, res, next) => {
 }
 
 
-exports.update = (req, res, next) => resUtils.methodNotAllowResponse(res, 'Method not allow!');
-exports.delete = (req, res, next) => resUtils.methodNotAllowResponse(res, 'Method not allow!');
+exports.update = async (req, res, next) => resUtils.methodNotAllowResponse(res, 'Method not allow!');
+exports.delete = async (req, res, next) => resUtils.methodNotAllowResponse(res, 'Method not allow!');

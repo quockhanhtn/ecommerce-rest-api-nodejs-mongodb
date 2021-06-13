@@ -10,12 +10,14 @@ const resUtils = require('../utils/res.utils');
  * @param {*} res 
  * @param {*} next 
  */
-exports.read = (req, res, next) => {
-  admin.auth().listUsers(1000)
-    .then(docs => {
-      resUtils.okResponse(res, '', docs);
-    })
-    .catch(err => resUtils.errorResponse(res, err));
+exports.read = async (req, res, next) => {
+  try {
+    const usser = await admin.auth().getUserByPhoneNumber('+84342229515');
+    const users = await admin.auth().listUsers();
+    resUtils.okResponse(res, '', users);
+  } catch (err) {
+    resUtils.errorResponse(res, err)
+  }
 }
 
 
@@ -32,7 +34,7 @@ exports.signup = async (req, res, next) => {
   } catch (e) {
     res.json({ message: 'no user record found' })
   }
-  
+
   bcrypt.hash(req.body.password, 10, (err, hash) => {
     if (err) {
       resUtils.errorResponse(res, err);

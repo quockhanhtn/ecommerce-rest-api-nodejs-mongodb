@@ -7,6 +7,15 @@ function getUserData(req) {
   return jwt.verify(jwtToken, process.env.JWT_KEY);
 }
 
+exports.isLogin = (req, res, next) => {
+  try {
+    req.userData = getUserData(req);;
+    next();
+  } catch (error) {
+    resUtils.unauthorizedResponse(res, 'Auth failed! ' + error);
+  }
+}
+
 exports.isAdmin = (req, res, next) => {
   try {
     let data = getUserData(req);

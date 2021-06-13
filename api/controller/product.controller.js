@@ -1,14 +1,35 @@
 const mongoose = require('mongoose');
 
-const resUtils = require('../utils/res-utils');
+const resUtils = require('../utils/res.utils');
 
-const Product = require('../models/product-model');
+const Product = require('../models/product.model');
 
 
-/**
- * GET /name
- */
-exports.getAll = (req, res, next) => {
+exports.create = async (req, res, next) => {
+  const product = new Product({
+    _id: new mongoose.Types.ObjectId(),
+    name: req.body.name,
+    price: Number.parseInt(req.body.price) || 0
+  });
+
+  if (req.body.description) { product.description = req.body.description; }
+  if (req?.file?.path) {
+    product.image = req.file.path;
+    while (product.image.indexOf('\\') >= 0) {
+      product.image = product.image.replace('\\', '/');
+    }
+  }
+
+  try {
+    const newProduct = await product.save();
+    resUtils.createdResponse(res, 'Created product successfully!', newProduct);
+  } catch (err) {
+    resUtils.errorResponse(res, err)
+  }
+}
+
+
+exports.read = async (req, res, next) => {
   let _limit = Number.parseInt(req.query._limit) || 10;
   let _page = Number.parseInt(req.query._page) || 1;
 
@@ -19,37 +40,38 @@ exports.getAll = (req, res, next) => {
     limit: _limit,
   };
 
-  Product.paginate(query, options)
-    .then(result => {
-      if (result?.docs && result.docs.length >= 0) {
-        res.status(200).json({
-          success: true,
-          data: result.docs,
-          pagination: {
-            page: result.page,
-            limit: result.limit,
-            offset: result.offset,
-            pagingCounter: result.pagingCounter,
-            hasNextPage: result.hasNextPage,
-            hasPrevPage: result.hasPrevPage,
-            nextPage: result.nextPage,
-            prevPage: result.prevPage,
-            total: result.totalDocs,
-            totalPage: result.totalPages
-          }
-        });
-      } else {
-        resUtils.notFoundResponse(res, 'No entities found');
-      }
-    })
-    .catch(err => resUtils.errorResponse(res, err.message));
+  try {
+    let results = await Product.paginate(query, options);
+    let pagination = {
+      page: results.page,
+      limit: results.limit,
+      offset: results.offset,
+      pagingCounter: results.pagingCounter,
+      hasNextPage: results.hasNextPage,
+      hasPrevPage: results.hasPrevPage,
+      nextPage: results.nextPage,
+      prevPage: results.prevPage,
+      total: results.totalDocs,
+      totalPage: results.totalPages
+    };
+
+    resUtils.okResponse(res, null, results.data, pagination);
+
+    // resUtils.okResponse(res, null, results);
+    // if (results && result.docs.length >= 0) {
+    //   res.status(200).json({
+    //     success: true,
+    //     data: result.docs,
+    //     pagination: 
+    //   });
+    // };
+  } catch (err) {
+    resUtils.errorResponse(res, err);
+  }
 }
 
 
-/**
- * GET /name/:id
- */
-exports.getOne = (req, res, next) => {
+exports.find = async (req, res, next) => {
   Product.findById(req.params.id)
     .exec()
     .then(docs => {
@@ -65,31 +87,11 @@ exports.getOne = (req, res, next) => {
 
 
 /**
- * POST /name
- */
-exports.create = (req, res, next) => {
-  const product = new Product({
-    _id: new mongoose.Types.ObjectId(),
-    name: req.body.name,
-    price: Number.parseInt(req.body.price) || 0
-  });
-
-  if (req?.file?.path) {
-    product.image = req.file.path;
-  }
-
-  product.save()
-    .then(docs => resUtils.createdResponse(res, null, docs))
-    .catch(err => resUtils.errorResponse(res, err.message));
-}
-
-
-/**
  * PUT /name/:id
  * 
  * PATCH /name/:id
  */
-exports.update = (req, res, next) => {
+exports.update = async (req, res, next) => {
   const id = req.params.id;
   const updateOps = {};
   req.body.forEach(ops => updateOps[ops.key] = ops.value);
@@ -107,7 +109,7 @@ exports.update = (req, res, next) => {
 /**
  * DELETE /name/:id
  */
-exports.delete = (req, res, next) => {
+exports.delete = async (req, res, next) => {
   const id = req.params.id;
 
   Product.remove({ _id: id })

@@ -6,64 +6,92 @@ const resUtils = require('../utils/res.utils');
 const User = require('../models/user.model');
 
 
-exports.signup = async (req, res, next) => {
-  User.find({ email: req.body.email })
-    .exec()
-    .then(userDocs => {
-      if (userDocs.length >= 1) {
-        resUtils.notFoundResponse(res, 'Mail exists')
-      } else {
-        bcrypt.hash(req.body.password, 10, (err, hash) => {
-          if (err) {
-            catchError(res, err);
-          } else {
-            const user = new User({
-              _id: new mongoose.Types.ObjectId(),
-              email: req.body.email,
-              password: hash
-            });
-            user.save()
-              .then(docs => {
-                console.log(docs);
-                return res.status(200).json({
-                  success: true,
-                  message: 'created user'
-                });
-              })
-              .catch(_err => catchError(res, _err));
-          }
-        });
-      }
-    })
-    .catch(err => resUtils.errorResponse(res, err));
+/**
+ * api/user/info 
+ */
+exports.getInfo = async (req, res, next) => {
+  resUtils.okResponse(res, '', req.userData);
 }
 
-exports.login = (req, res, next) => {
-  User.findOne({ email: req.body.email })
-    .exec()
-    .then(userFound => {
-      if (userFound.length < 1) {
-        resUtils.notFoundResponse(res, 'User doesn\'t exist');
-      } else {
-        bcrypt.compare(req.body.password, userFound.password, (err, result) => {
-          if (err) { throw new Error(err.message); }
-          if (result) {
-            const token = jwt.sign(
-              {
-                email: userFound.email,
-                userId: userFound._id,
-                userType: userFound.userType
-              },
-              process.env.JWT_KEY,
-              {
-                expiresIn: "1h"
-              });
-            resUtils.okResponse(res, 'Auth successful!', { token: token });
-          } else {
-            resUtils.unauthorizedResponse(res, 'Auth failed!');
-          }
-        });
+
+exports.signup = async (req, res, next) => {
+  try {
+    const userFound = await User.findOne({
+      $or: [
+        { email: req.body.email },
+        { phone: req.body.phone }
+      ]
+    }).exec();
+
+    if (userFound != null) { throw Error('User exists'); }
+
+    let hashPassword = bcrypt.hashSync(req.body.password, 10);
+
+    const user = new User({
+      _id: new mongoose.Types.ObjectId(),
+      firebaseUid: req.body.firebaseUid,
+      email: req.body.email,
+      phone: req.body.phone,
+      password: hashPassword
+    });
+
+    if (req.body.firstName) { user.firstName = req.body.firstName; }
+    if (req.body.lastName) { user.lastName = req.body.lastName; }
+    if (parseInt(req.body.gender) < 3) { user.gender = parseInt(req.body.gender); }
+
+    if (req?.file?.path) {
+      user.image = req.file.path;
+      while (user.image.indexOf('\\') >= 0) {
+        user.image = user.image.replace('\\', '/');
       }
-    })
-    .catch(err => resUtils.errorResponse(res, err));
+    }
+
+    const saveResult = await user.save();
+
+    if (saveResult) {
+      resUtils.createdResponse(res, 'Sign in successfully!', saveResult);
+    }
+  } catch (err) {
+    resUtils.errorResponse(res, err);
+  }
+}
+
+exports.login = async (req, res, next) => {
+  try {
+    if (!req.body.email && !req.body.phone) {
+      throw Error('Email or phone number is missing!');
+    }
+
+    const userFound = await User.findOne({
+      $or: [
+        { email: req.body.email },
+        { phone: req.body.phone }
+      ]
+    }).exec();
+
+    if (userFound == null) { throw Error('User doesn\'t exist'); }
+
+    const isValidPassword = bcrypt.compareSync(req.body.password, userFound.password);
+
+    if (isValidPassword) {
+      const token = jwt.sign(
+        {
+          firstName: userFound.firstName,
+          lastName: userFound.lastName,
+          gender: userFound.gender,
+
+          email: userFound.email,
+          phone: userFound.phone,
+          image: req.protocol + '://' + req.get('host') + '/' + userFound.image,
+          userId: userFound._id,
+          userType: userFound.userType
+        },
+        process.env.JWT_KEY,
+        { expiresIn: "30d" }
+      );
+      resUtils.okResponse(res, 'Auth successful!', { token: token });
+    } else { throw Error('Password is incorrect!'); }
+  } catch (err) {
+    resUtils.errorResponse(res, err);
+  }
 }
