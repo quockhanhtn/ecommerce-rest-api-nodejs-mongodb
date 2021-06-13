@@ -1,6 +1,5 @@
 const ROOT_UPLOAD_PATH = './public/uploads';
 const MAX_UPLOAD_FILE_SIZE = 1024 * 1024;
-const NO_FILE_PER_REQUEST = 1;
 
 const multer = require('multer');
 
@@ -17,14 +16,17 @@ function removeAccents(str) {
     .replace(/đ/g, 'd').replace(/Đ/g, 'D');
 }
 
+
 /**
  * Get Multer instance
  * 
- * @param {String[]} allowedMimes 
- * @returns  Multer instance that provides several methods for generating
-  * middleware that process files uploaded in `multipart/form-data` format.
+ * @param {String}        customPath 
+ * @param {allowedMimes}  allowedMimes 
+ * @param {Number}        filePerReq Maximum number of parts (non-file fields + files). (Default: 1)
+ * @returns Multer instance that provides several methods for generating
+ * middleware that process files uploaded in `multipart/form-data` format.
  */
-function multerUpload(customPath, allowedMimes = []) {
+function multerUpload(customPath, allowedMimes = [], filePerReq = 1) {
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {
       cb(null, ROOT_UPLOAD_PATH + customPath);
@@ -37,7 +39,7 @@ function multerUpload(customPath, allowedMimes = []) {
   const uploadOptions = {
     storage: storage,
     limits: {
-      files: NO_FILE_PER_REQUEST,
+      files: filePerReq,
       fileSize: MAX_UPLOAD_FILE_SIZE
     }
   }

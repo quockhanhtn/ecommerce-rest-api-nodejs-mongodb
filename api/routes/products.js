@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const allowedMimes = ['image/jpeg', 'image/jpeg', 'image/png', 'image/gif'];
-const upload = require('../utils/upload.utils').multerUpload('/categories/', allowedMimes);
+const upload = require('../utils/upload.utils').multerUpload('/products/', allowedMimes, 21);
 const jwtAuth = require('../middlewares/jwt-auth');
 
 const productController = require('../controller/product.controller');
@@ -11,7 +11,7 @@ router.route('/')
   .get(productController.read)
   .post(
     jwtAuth.isAdmin,
-    upload.single('productImage'),
+    upload.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'images', maxCount: 20 }]),
     productController.create
   );
 router.route('/:id')
