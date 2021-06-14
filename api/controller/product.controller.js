@@ -97,6 +97,7 @@ exports.read = async (req, res, next) => {
   let query = {};
   let options = {
     select: '_id productId name slug marketPrice price description categoryId brandId productTypes thumbnail images createdAt updatedAt',
+    sort: [['createdAt', 'descending']],
     populate: [
       {
         path: 'category',
