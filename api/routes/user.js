@@ -15,6 +15,18 @@ router.route('/info').get(
   userController.getInfo
 );
 
+router.route('/update')
+  .put(
+    upload.single('userImage'),
+    jwtAuth.isLogin,
+    userController.updateInfo
+  )
+  .patch(
+    upload.single('userImage'),
+    jwtAuth.isLogin,
+    userController.updateInfo
+  );
+
 router.route('/signup').post(
   upload.single('userImage'),
   firebaseAuth.checkPhone,

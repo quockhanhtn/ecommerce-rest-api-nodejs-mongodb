@@ -10,7 +10,29 @@ const User = require('../models/user.model');
  * api/user/info 
  */
 exports.getInfo = async (req, res, next) => {
-  resUtils.okResponse(res, '', req.userData);
+
+  const foundUser = await User.findOne({ _id: req.userData.userId })
+    .select('firstName lastName gender email phone image userId userType')
+    .exec();
+
+  if (foundUser?.image) {
+    foundUser.image = `${req.protocol}://${req.get('host')}/${foundUser.image}`;
+  }
+
+  resUtils.okResponse(res, '', foundUser);
+}
+
+
+exports.updateInfo = async (req, res, next) => {
+  // const foundUser = await User.findOne({ _id: req.userData.userId })
+  //   .select('firstName lastName gender email phone image userId userType')
+  //   .exec();
+
+  // if (foundUser?.image) {
+  //   foundUser.image = `${req.protocol}://${req.get('host')}/${foundUser.image}`;
+  // }
+
+  // resUtils.okResponse(res, '', foundUser);
 }
 
 

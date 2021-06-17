@@ -2,10 +2,24 @@ const mongoose = require('mongoose');
 
 const fs = require('fs');
 const resUtils = require('../utils/res.utils');
+const dataUtils = require('../utils/data.utils');
 
 const Category = require('../models/category.model');
 const Brand = require('../models/brand.model');
 const Product = require('../models/product.model');
+
+const populateOptions = [
+  {
+    path: 'category',
+    select: '_id name slug description image isPrimary createdAt updatedAt',
+    model: 'Category'
+  },
+  {
+    path: 'brand',
+    select: '_id brandId name slug origin description image createdAt updatedAt',
+    model: 'Brand'
+  }
+];
 
 /**
  * Remove all uploaded image, call it if has error
@@ -98,18 +112,7 @@ exports.read = async (req, res, next) => {
   let options = {
     select: '_id productId name slug marketPrice price description categoryId brandId productTypes thumbnail images createdAt updatedAt',
     sort: [['createdAt', 'descending']],
-    populate: [
-      {
-        path: 'category',
-        select: '_id name slug description image isPrimary createdAt updatedAt',
-        model: 'Category'
-      },
-      {
-        path: 'brand',
-        select: '_id brandId name slug origin description image createdAt updatedAt',
-        model: 'Brand'
-      }
-    ],
+    populate: populateOptions,
     lean: true,
     offset: _limit * (_page - 1),
     limit: _limit,
@@ -137,17 +140,29 @@ exports.read = async (req, res, next) => {
 
 
 exports.find = async (req, res, next) => {
-  Product.findById(req.params.id)
-    .exec()
-    .then(docs => {
-      if (docs) {
-        resUtils.okResponse(res, null, data);
-      }
-      else {
-        resUtils.notFoundResponse(res, 'Not found valid entity for provided Id');
-      }
-    })
-    .catch(err => resUtils.errorResponse(res, err.message));
+  const id = req.params.id;
+
+  let filter = {};
+
+  if (dataUtils.isUuid(id)) {
+    filter = { _id: id };
+  } else if (dataUtils.isNumber(id)) {
+    filter = { productId: id };
+  } else {
+    filter = { slug: id };
+  }
+
+  try {
+    let foundProduct = await Product.findOne(filter).populate(populateOptions).exec();
+    if (foundProduct) {
+      [foundProduct] = mapImagePath([foundProduct], req);
+      resUtils.okResponse(res, null, foundProduct);
+    } else {
+      resUtils.notFoundResponse(res, 'Not found any product!');
+    }
+  } catch (err) {
+    resUtils.errorResponse(res, err);
+  }
 }
 
 
@@ -157,17 +172,18 @@ exports.find = async (req, res, next) => {
  * PATCH /name/:id
  */
 exports.update = async (req, res, next) => {
-  const id = req.params.id;
-  const updateOps = {};
-  req.body.forEach(ops => updateOps[ops.key] = ops.value);
-  updateOps['updatedAt'] = new Date();
+  resUtils.methodNotAllowResponse(res, 'Method not allow!')
+  // const id = req.params.id;
+  // const updateOps = {};
+  // req.body.forEach(ops => updateOps[ops.key] = ops.value);
+  // updateOps['updatedAt'] = new Date();
 
-  Product.updateOne({ _id: id }, { $set: updateOps })
-    .exec()
-    .then(docs => {
-      res.status(200).json(docs);
-    })
-    .catch(err => resUtils.errorResponse(res, err.message));
+  // Product.updateOne({ _id: id }, { $set: updateOps })
+  //   .exec()
+  //   .then(docs => {
+  //     res.status(200).json(docs);
+  //   })
+  //   .catch(err => resUtils.errorResponse(res, err.message));
 }
 
 
@@ -175,23 +191,24 @@ exports.update = async (req, res, next) => {
  * DELETE /name/:id
  */
 exports.delete = async (req, res, next) => {
-  const id = req.params.id;
+  resUtils.methodNotAllowResponse(res, 'Method not allow!')
+  // const id = req.params.id;
 
-  Product.remove({ _id: id })
-    .exec()
-    .then(docs => {
-      if (docs && docs.n > 0) {
-        res.status(200).json({
-          success: true,
-          data: docs
-        });
-      }
-      else {
-        res.status(404).json({
-          success: false,
-          error: 'Not found valid entity for provided Id'
-        });
-      }
-    })
-    .catch(err => resUtils.errorResponse(res, err.message));
+  // Product.remove({ _id: id })
+  //   .exec()
+  //   .then(docs => {
+  //     if (docs && docs.n > 0) {
+  //       res.status(200).json({
+  //         success: true,
+  //         data: docs
+  //       });
+  //     }
+  //     else {
+  //       res.status(404).json({
+  //         success: false,
+  //         error: 'Not found valid entity for provided Id'
+  //       });
+  //     }
+  //   })
+  //   .catch(err => resUtils.errorResponse(res, err.message));
 }

@@ -12,7 +12,7 @@ exports.checkPhone = async (req, res, next) => {
     if (firebareUser != null) {
       req.body.firebaseUid = firebareUser.uid;
       next();
-    } else { throw Error('phone number not verifying!'); }
+    } else { throw Error('Phone number not verifying!'); }
   } catch (err) {
     resUtils.errorResponse(res, err)
   }

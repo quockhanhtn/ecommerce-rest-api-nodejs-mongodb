@@ -14,6 +14,7 @@ router.route('/')
     upload.fields([{ name: 'thumbnail', maxCount: 1 }, { name: 'images', maxCount: 20 }]),
     productController.create
   );
+  
 router.route('/:id')
   .get(productController.find)
   .put(productController.update)
